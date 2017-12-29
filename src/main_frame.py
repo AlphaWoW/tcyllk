@@ -21,47 +21,65 @@ class FrameWithHotKey(wx.Frame):
 
         self.ToggleWindowStyle(wx.STAY_ON_TOP)
 
+        self.playgame = lianliankan.PlayGame()
+        self.retrycnt = 0
+
     def regHotKey(self):
         self.hotKeyId = 100
         self.RegisterHotKey(
             self.hotKeyId,
-            win32con.MOD_ALT,
+            0,
             win32con.VK_F1)
 
     def regHotKey2(self):
         self.hotKeyId2 = 101
         self.RegisterHotKey(
             self.hotKeyId2,
-            win32con.MOD_ALT,
+            0,
             win32con.VK_F2)
 
     def regHotKey3(self):
         self.hotKeyId3 = 102
         self.RegisterHotKey(
             self.hotKeyId3,
-            win32con.MOD_ALT,
+            0,
             win32con.VK_F3)
 
     def handleHotKey(self, evt):
+        self.t = self.playgame.solve_all()
         self.timer.Start(100)
 
     def handleHotKey2(self, evt):
-        self.timer.Stop()
+        if self.timer.IsRunning():
+            print('pause')
+            self.timer.Stop()
+        else:
+            print('resume')
+            self.timer.Start(100)
 
     def handleHotKey3(self, evt):
-        lianliankan.fuck = not lianliankan.fuck
+        print('change super mode')
+        self.playgame.switch_super()
 
     def on_timer(self, event):
-        self.t.__next__()
+        try:
+            self.t.__next__()
+        except:
+            self.retrycnt += 1
+            if self.retrycnt < 2:
+                self.t = self.playgame.solve_all()
+            else:
+                self.retrycnt = 0
+                self.timer.Stop()
 
     def on_click(self, event):
-        self.t = lianliankan.solve_all()
+        self.t = self.playgame.solve_all()
         self.t.__next__()
         self.timer.Start(100)
 
 
 app = wx.App()
 
-frm = FrameWithHotKey(None, title='hello world')
+frm = FrameWithHotKey(None, title='Super LianLianKan')
 frm.Show()
 app.MainLoop()
